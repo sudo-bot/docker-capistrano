@@ -3,10 +3,13 @@ name: Build docker image
 on: [push]
 
 jobs:
-    build-action:
+    build-and-test:
+        name: Build and test image
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
               uses: actions/checkout@v2
-            - name: Build action image
+            - name: Build image
               run: make docker-build
+            - name: Test image
+              run: make docker-test

@@ -3,4 +3,4 @@ version: "3.3"
 services:
     sut:
         build: .
-        command: "bundle --version"
+        command: "bundle info capistrano"
