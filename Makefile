@@ -26,4 +26,4 @@ tag:
 	git push origin "refs/tags/$(shell make version)-symfony"
 
 version:
-	@grep -F 'capistrano' ./docker/Gemfile | cut -d "'" -f 4
+	@grep -F "'capistrano'" ./docker/Gemfile | cut -d "'" -f 4
