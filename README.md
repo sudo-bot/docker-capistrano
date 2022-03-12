@@ -4,4 +4,4 @@ Go to [Capistrano](https://github.com/capistrano/capistrano#readme) at GitHub or
 
 You can find the image on [Docker Hub](https://hub.docker.com/r/botsudo/capistrano)
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/botsudo/phpunit.svg)](https://hub.docker.com/r/botsudo/capistrano)
+[![Docker Pulls](https://img.shields.io/docker/pulls/botsudo/capistrano.svg)](https://hub.docker.com/r/botsudo/capistrano)
