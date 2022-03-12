@@ -13,14 +13,14 @@ docker-test:
 	docker-compose -f ./docker/docker-compose-latest.test.yml up
 
 update-tags:
-	git checkout main
+	git checkout symfony
 	git tag -s -f -a -m "latest version ($(shell make version)) with symfony" latest-symfony
 	git checkout -
 	git push origin refs/tags/latest-symfony -f
 
 tag:
 	@echo "Tagging: $(shell make version)-symfony"
-	git checkout main
+	git checkout symfony
 	git tag -s -a -m "$(shell make version)-symfony" "$(shell make version)-symfony"
 	git checkout -
 	git push origin "refs/tags/$(shell make version)-symfony"
