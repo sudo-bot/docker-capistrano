@@ -4,9 +4,9 @@ IMAGE_TAG ?= capistrano
 
 docker-build:
 	docker build ./docker \
-		--build-arg VCS_REF=`git rev-parse HEAD` \
-		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-		--build-arg RELEASE_VERSION=`make version` \
+		--build-arg VCS_REF="$(shell git rev-parse HEAD)" \
+		--build-arg BUILD_DATE="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+		--build-arg RELEASE_VERSION="$(shell make version)" \
 		--tag $(IMAGE_TAG)
 
 docker-test:
