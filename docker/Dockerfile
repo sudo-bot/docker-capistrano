@@ -1,6 +1,6 @@
 FROM ruby:3-alpine3.14
 
-ARG RELEASE_VERSION="3.11.0"
+ARG RELEASE_VERSION
 
 # Metadata params
 ARG VCS_REF
