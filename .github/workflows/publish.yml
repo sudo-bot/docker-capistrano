@@ -27,11 +27,11 @@ jobs:
         - name: Build action image
           run: make docker-build
           env:
-            IMAGE_TAG: docker.io/botsudo/capistrano:${{ steps.get_version.outputs.VERSION }}
+            IMAGE_TAG: docker.io/botsudo/capistrano:${{ steps.get_version.outputs.VERSION }}-symfony
         - name: Sign and push docker image
           uses: sudo-bot/action-docker-sign@latest
           with:
-            image-ref: "docker.io/botsudo/capistrano:${{ steps.get_version.outputs.VERSION }}"
+            image-ref: "docker.io/botsudo/capistrano:${{ steps.get_version.outputs.VERSION }}-symfony"
             private-key-id: "${{ secrets.DOCKER_PRIVATE_KEY_ID }}"
             private-key: ${{ secrets.DOCKER_PRIVATE_KEY }}
             private-key-passphrase: ${{ secrets.DOCKER_PRIVATE_KEY_PASSPHRASE }}

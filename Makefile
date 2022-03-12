@@ -1,4 +1,4 @@
-IMAGE_TAG ?= capistrano
+IMAGE_TAG ?= capistrano-symfony
 
 .PHONY: docker-build docker-test tag update-tags
 
@@ -14,16 +14,16 @@ docker-test:
 
 update-tags:
 	git checkout main
-	git tag -s -f -a -m "latest version ($(shell make version))" latest
+	git tag -s -f -a -m "latest version ($(shell make version)) with symfony" latest-symfony
 	git checkout -
-	git push origin refs/tags/latest -f
+	git push origin refs/tags/latest-symfony -f
 
 tag:
-	@echo "Tagging: $(shell make version)"
+	@echo "Tagging: $(shell make version)-symfony"
 	git checkout main
-	git tag -s -a -m "$(shell make version)" "$(shell make version)"
+	git tag -s -a -m "$(shell make version)-symfony" "$(shell make version)-symfony"
 	git checkout -
-	git push origin "refs/tags/$(shell make version)"
+	git push origin "refs/tags/$(shell make version)-symfony"
 
 version:
 	@grep -F 'capistrano' ./docker/Gemfile | cut -d "'" -f 4
