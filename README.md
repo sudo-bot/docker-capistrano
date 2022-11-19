@@ -1,8 +1,8 @@
 # A Docker image to run Capistrano
 
-Go to [Capistrano](https://github.com/capistrano/capistrano#readme) at GitHub or on their [website](https://capistranorb.com/)
+Go to [Capistrano's GitHub](https://github.com/capistrano/capistrano#readme) or on [Capistrano's website](https://capistranorb.com/)
 
-You can find the image on [Docker Hub](https://hub.docker.com/r/botsudo/capistrano)
+You can find the image on [Docker Hub](https://hub.docker.com/r/botsudo/capistrano) and on [GitHub](https://github.com/sudo-bot/docker-capistrano#readme)
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/botsudo/capistrano.svg)](https://hub.docker.com/r/botsudo/capistrano)
 
@@ -70,5 +70,7 @@ docker run \
     -e BRANCH=$2 \
     -e ENV_NAME=$ENV_NAME \
     -e SSH_KEY="./deploy/keys/id_rsa_deploy" \
-    -it --net=host --rm botsudo/capistrano:3.17.1-symfony sh -exu -c './deploy/scripts/launch.sh'
+    -it --net=host --rm botsudo/capistrano:3.17.1 sh -exu -c './deploy/scripts/launch.sh'
+    # Also exists as 3.17.1-symfony for deploying symfony
+    # Also exists as 3.17.1-laravel for deploying laravel
 ```
