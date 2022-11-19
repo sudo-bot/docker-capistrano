@@ -1,6 +1,6 @@
 IMAGE_TAG ?= capistrano-laravel
 
-.PHONY: docker-build docker-test tag update-tags
+.PHONY: docker-build docker-test tag
 
 docker-build:
 	docker build ./docker \
@@ -14,9 +14,8 @@ docker-test:
 
 tag:
 	@echo "Tagging: $(shell make version)-laravel"
-	git checkout laravel
+	sleep 3
 	git tag -s -a -m "$(shell make version)-laravel" "$(shell make version)-laravel"
-	git checkout -
 	git push origin "refs/tags/$(shell make version)-laravel"
 
 version:
