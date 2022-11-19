@@ -13,8 +13,9 @@ COPY Gemfile ./
 
 RUN apk add --update --no-cache openssh-client make ruby-dev gcc musl-dev && \
     gem install bundler --user-install && \
-    bundle install && \
-    apk del gcc make musl-dev ruby-dev
+    bundle install --no-cache && \
+    apk del gcc make musl-dev ruby-dev && \
+    rm -rf /usr/local/bundle/cache /root/.bundle
 
 # Metadata
 LABEL org.label-schema.vendor="Sudo-Bot" \
