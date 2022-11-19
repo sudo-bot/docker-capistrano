@@ -13,16 +13,13 @@ docker-test:
 	docker-compose -f ./docker/docker-compose-latest.test.yml up
 
 update-tags:
-	git checkout main
 	git tag -s -f -a -m "latest version ($(shell make version))" latest
-	git checkout -
 	git push origin refs/tags/latest -f
 
 tag:
 	@echo "Tagging: $(shell make version)"
-	git checkout main
+	sleep 3
 	git tag -s -a -m "$(shell make version)" "$(shell make version)"
-	git checkout -
 	git push origin "refs/tags/$(shell make version)"
 
 version:
