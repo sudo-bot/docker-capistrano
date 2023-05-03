@@ -22,7 +22,7 @@ COPY Gemfile ./
 COPY --from=builder /usr/local/bundle/ /usr/local/bundle/
 RUN apk add --update --no-cache openssh-client && \
     bundle exec cap --version && \
-    ssh-agent --version
+    ssh-keyscan github.com
 
 # Metadata
 LABEL org.label-schema.vendor="Sudo-Bot" \
