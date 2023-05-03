@@ -16,6 +16,7 @@ ARG BUILD_DATE
 ARG RELEASE_VERSION
 
 WORKDIR /deploy
+COPY Gemfile ./
 
 # We copy over the entire gems directory for our builder image, containing the already built artifact
 COPY --from=builder /usr/local/bundle/ /usr/local/bundle/
