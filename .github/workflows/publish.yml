@@ -35,7 +35,3 @@ jobs:
             private-key-id: "${{ secrets.DOCKER_PRIVATE_KEY_ID }}"
             private-key: ${{ secrets.DOCKER_PRIVATE_KEY }}
             private-key-passphrase: ${{ secrets.DOCKER_PRIVATE_KEY_PASSPHRASE }}
-        - name: Docker tag latest
-          run: docker tag docker.io/botsudo/capistrano:${{ steps.get_version.outputs.VERSION }} docker.io/botsudo/capistrano:latest
-        - name: Docker update latest
-          run: docker push docker.io/botsudo/capistrano:latest
