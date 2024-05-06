@@ -1,6 +1,14 @@
-FROM ruby:3-alpine3.16
+FROM ruby:3-alpine3.19 as builder
 
-ARG RELEASE_VERSION
+COPY Gemfile ./
+
+RUN apk add --update --no-cache make ruby-dev gcc musl-dev && \
+    gem install bundler --user-install && \
+    bundle install --no-cache && \
+    apk del gcc make musl-dev ruby-dev && \
+    rm -rf /usr/local/bundle/cache /root/.bundle
+
+FROM ruby:3-alpine3.19
 
 # Metadata params
 ARG VCS_REF
@@ -8,14 +16,13 @@ ARG BUILD_DATE
 ARG RELEASE_VERSION
 
 WORKDIR /deploy
-
 COPY Gemfile ./
 
-RUN apk add --update --no-cache openssh-client make ruby-dev gcc musl-dev && \
-    gem install bundler --user-install && \
-    bundle install --no-cache && \
-    apk del gcc make musl-dev ruby-dev && \
-    rm -rf /usr/local/bundle/cache /root/.bundle
+# We copy over the entire gems directory for our builder image, containing the already built artifact
+COPY --from=builder /usr/local/bundle/ /usr/local/bundle/
+RUN apk add --update --no-cache openssh-client && \
+    bundle exec cap --version && \
+    ssh-keyscan github.com
 
 # Metadata
 LABEL org.label-schema.vendor="Sudo-Bot" \
