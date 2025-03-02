@@ -1,11 +1,11 @@
-FROM ruby:3-alpine3.21 as builder
+FROM ruby:3-alpine3.21 AS builder
 
 COPY Gemfile ./
 
 RUN apk add --update --no-cache make ruby-dev gcc musl-dev && \
     gem install bundler --user-install && \
-    bundle update --bundler && \
     bundle install --no-cache && \
+    bundle update --bundler && \
     apk del gcc make musl-dev ruby-dev && \
     rm -rf /usr/local/bundle/cache /root/.bundle
 
