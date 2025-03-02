@@ -4,6 +4,7 @@ COPY Gemfile ./
 
 RUN apk add --update --no-cache make ruby-dev gcc musl-dev && \
     gem install bundler --user-install && \
+    bundle update --bundler && \
     bundle install --no-cache && \
     apk del gcc make musl-dev ruby-dev && \
     rm -rf /usr/local/bundle/cache /root/.bundle
