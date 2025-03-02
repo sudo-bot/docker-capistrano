@@ -1,6 +1,7 @@
 name: Publish Docker image
 
 env:
+  IMAGE_TAG_NAME: laravel
   IMAGE_NAME: docker.io/botsudo/capistrano
   HUB_TOOL_VERSION: 0.4.6
 
@@ -58,11 +59,11 @@ jobs:
           DOCKER_BUILDKIT: 1
           BUILDKIT_MULTI_PLATFORM: "false"
           PLATFORM: ${{ matrix.platform }}
-          IMAGE_TAG: "${{ env.IMAGE_NAME }}:${{ matrix.internal-tag }}-laravel"
+          IMAGE_TAG: "${{ env.IMAGE_NAME }}:${{ matrix.internal-tag }}-${{ env.IMAGE_TAG_NAME }}"
           ACTION: push
           # Disable provenance to remove the attestation from the pushed image
           # See: https://github.com/docker/buildx/issues/1509
-          # It makes: ${{ env.IMAGE_NAME }}:<arch>-laravel a manifest list
+          # It makes: ${{ env.IMAGE_NAME }}:<arch>-${{ env.IMAGE_TAG_NAME }} a manifest list
           # And docker manifest create does not like that
           EXTRA_ARGS: "--provenance=false"
 
@@ -82,20 +83,20 @@ jobs:
           password: ${{ secrets.DOCKER_REPOSITORY_PASSWORD }}
       - name: Create the manifest
         run: |
-          docker manifest create ${{ env.IMAGE_NAME }}:laravel \
-          ${{ env.IMAGE_NAME }}:arm64-laravel \
-          ${{ env.IMAGE_NAME }}:amd64-laravel \
-          ${{ env.IMAGE_NAME }}:armv7-laravel \
-          ${{ env.IMAGE_NAME }}:armv6-laravel \
-          ${{ env.IMAGE_NAME }}:ppc64le-laravel \
-          ${{ env.IMAGE_NAME }}:riscv64-laravel \
-          ${{ env.IMAGE_NAME }}:s390x-laravel \
-          ${{ env.IMAGE_NAME }}:386-laravel \
+          docker manifest create ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_NAME }} \
+          ${{ env.IMAGE_NAME }}:arm64-${{ env.IMAGE_TAG_NAME }} \
+          ${{ env.IMAGE_NAME }}:amd64-${{ env.IMAGE_TAG_NAME }} \
+          ${{ env.IMAGE_NAME }}:armv7-${{ env.IMAGE_TAG_NAME }} \
+          ${{ env.IMAGE_NAME }}:armv6-${{ env.IMAGE_TAG_NAME }} \
+          ${{ env.IMAGE_NAME }}:ppc64le-${{ env.IMAGE_TAG_NAME }} \
+          ${{ env.IMAGE_NAME }}:riscv64-${{ env.IMAGE_TAG_NAME }} \
+          ${{ env.IMAGE_NAME }}:s390x-${{ env.IMAGE_TAG_NAME }} \
+          ${{ env.IMAGE_NAME }}:386-${{ env.IMAGE_TAG_NAME }} \
               --amend
       - name: Push the manifest
-        run: docker manifest push ${{ env.IMAGE_NAME }}:laravel
+        run: docker manifest push ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_NAME }}
       - name: Inspect the manifest
-        run: docker manifest inspect ${{ env.IMAGE_NAME }}:laravel
+        run: docker manifest inspect ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_NAME }}
 
   tags-cleanup:
     environment:
@@ -128,14 +129,14 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_REPOSITORY_PASSWORD }}
       - name: Remove the temporary images via hub-tool
         run: |
-          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:arm64-laravel || true
-          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:amd64-laravel || true
-          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:armv7-laravel || true
-          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:armv6-laravel || true
-          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:ppc64le-laravel || true
-          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:riscv64-laravel || true
-          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:s390x-laravel || true
-          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:386-laravel || true
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:arm64-${{ env.IMAGE_TAG_NAME }} || true
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:amd64-${{ env.IMAGE_TAG_NAME }} || true
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:armv7-${{ env.IMAGE_TAG_NAME }} || true
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:armv6-${{ env.IMAGE_TAG_NAME }} || true
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:ppc64le-${{ env.IMAGE_TAG_NAME }} || true
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:riscv64-${{ env.IMAGE_TAG_NAME }} || true
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:s390x-${{ env.IMAGE_TAG_NAME }} || true
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:386-${{ env.IMAGE_TAG_NAME }} || true
           ./hub-tool tag ls --verbose ${{ env.IMAGE_NAME }}
       - name: Logout hub-tool
         if: always()

@@ -4,6 +4,7 @@ PLATFORM ?= linux/amd64
 
 ACTION ?= load
 PROGRESS_MODE ?= plain
+EXTRA_ARGS ?=
 
 .PHONY: docker-build docker-test tag
 
@@ -18,6 +19,7 @@ docker-build:
 		--platform $(PLATFORM) \
 		--pull \
 		--$(ACTION) \
+		$(EXTRA_ARGS) \
 		./docker
 
 docker-test:
