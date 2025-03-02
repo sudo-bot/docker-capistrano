@@ -21,7 +21,7 @@ docker-build:
 		./docker
 
 docker-test:
-	docker-compose -f ./docker/docker-compose-latest.test.yml up
+	docker compose -f ./docker/docker-compose-latest.test.yml up
 
 tag:
 	@echo "Tagging: $(shell make version)-symfony"
