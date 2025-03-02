@@ -29,7 +29,7 @@ jobs:
                     - { platform: "linux/arm/v7", platform-tag: "armv7" }
                     - { platform: "linux/arm/v6", platform-tag: "armv6" }
                     - { platform: "linux/ppc64le", platform-tag: "ppc64le" }
-                    #- { platform: "linux/riscv64", platform-tag: "riscv64" }
+                    - { platform: "linux/riscv64", platform-tag: "riscv64" }
                     - { platform: "linux/s390x", platform-tag: "s390x" }
                     - { platform: "linux/386", platform-tag: "386" }
                     #- { platform: "linux/mips64le", platform-tag: "mips64le" }
