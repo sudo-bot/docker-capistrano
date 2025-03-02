@@ -1,45 +1,142 @@
 name: Publish Docker image
 
+env:
+  IMAGE_NAME: docker.io/botsudo/capistrano
+  HUB_TOOL_VERSION: 0.4.6
+
 permissions:
   contents: read
 
 on:
   push:
     tags:
-       - 'latest'
-       - '*.*.*'
+      - "latest"
+      - "*.*.*"
 
 jobs:
-  push_to_registry:
+  build-image:
     environment:
-        name: Docker Hub
-        url: https://hub.docker.com/r/botsudo/capistrano
-    name: Push Docker image to Docker Hub
+      name: Docker Hub
+      url: https://hub.docker.com/r/botsudo/capistrano
     runs-on: ubuntu-latest
+    name: Build the Docker image
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          # All non supported by base image are commented
+          # This is an example for the base image ruby (alpine variant)
+          - { platform: "linux/arm64", internal-tag: "arm64" }
+          - { platform: "linux/amd64", internal-tag: "amd64" }
+          - { platform: "linux/arm/v7", internal-tag: "armv7" }
+          - { platform: "linux/arm/v6", internal-tag: "armv6" }
+          - { platform: "linux/ppc64le", internal-tag: "ppc64le" }
+          - { platform: "linux/riscv64", internal-tag: "riscv64" }
+          - { platform: "linux/s390x", internal-tag: "s390x" }
+          - { platform: "linux/386", internal-tag: "386" }
+          #- { platform: "linux/mips64le", internal-tag: "mips64le" }
+          #- { platform: "linux/mips64", internal-tag: "mips64" }
     steps:
-        - name: Check out the repository
-          uses: actions/checkout@v4
-        - name: Login to DockerHub
-          uses: docker/login-action@v3
-          with:
-            registry: docker.io
-            username: ${{ secrets.DOCKER_REPOSITORY_LOGIN }}
-            password: ${{ secrets.DOCKER_REPOSITORY_PASSWORD }}
-        - name: Get the version
-          id: get_version
-          run: echo ::set-output name=VERSION::$(make version)
-        - name: Build action image
-          run: make docker-build
-          env:
-            IMAGE_TAG: docker.io/botsudo/capistrano:${{ steps.get_version.outputs.VERSION }}
-        - name: Sign and push docker image
-          uses: sudo-bot/action-docker-sign@latest
-          with:
-            image-ref: "docker.io/botsudo/capistrano:${{ steps.get_version.outputs.VERSION }}"
-            private-key-id: "${{ secrets.DOCKER_PRIVATE_KEY_ID }}"
-            private-key: ${{ secrets.DOCKER_PRIVATE_KEY }}
-            private-key-passphrase: ${{ secrets.DOCKER_PRIVATE_KEY_PASSPHRASE }}
-        - name: Docker tag latest
-          run: docker tag docker.io/botsudo/capistrano:${{ steps.get_version.outputs.VERSION }} docker.io/botsudo/capistrano:latest
-        - name: Docker update latest
-          run: docker push docker.io/botsudo/capistrano:latest
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      # https://github.com/docker/setup-qemu-action
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      # https://github.com/docker/setup-buildx-action
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_REPOSITORY_LOGIN }}
+          password: ${{ secrets.DOCKER_REPOSITORY_PASSWORD }}
+      - name: Build and push image
+        run: make docker-build
+        env:
+          DOCKER_BUILDKIT: 1
+          BUILDKIT_MULTI_PLATFORM: "false"
+          PLATFORM: ${{ matrix.platform }}
+          IMAGE_TAG: "${{ env.IMAGE_NAME }}:${{ matrix.internal-tag }}-latest"
+          ACTION: push
+          # Disable provenance to remove the attestation from the pushed image
+          # See: https://github.com/docker/buildx/issues/1509
+          # It makes: ${{ env.IMAGE_NAME }}:<arch>-latest a manifest list
+          # And docker manifest create does not like that
+          EXTRA_ARGS: "--provenance=false"
+
+  create-final-image:
+    environment:
+      name: Docker Hub
+      url: https://hub.docker.com/r/botsudo/capistrano
+    runs-on: ubuntu-latest
+    needs: build-image
+    name: Create the image manifest
+    steps:
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_REPOSITORY_LOGIN }}
+          password: ${{ secrets.DOCKER_REPOSITORY_PASSWORD }}
+      - name: Create the manifest
+        run: |
+          docker manifest create ${{ env.IMAGE_NAME }}:latest \
+          ${{ env.IMAGE_NAME }}:arm64-latest \
+          ${{ env.IMAGE_NAME }}:amd64-latest \
+          ${{ env.IMAGE_NAME }}:armv7-latest \
+          ${{ env.IMAGE_NAME }}:armv6-latest \
+          ${{ env.IMAGE_NAME }}:ppc64le-latest \
+          ${{ env.IMAGE_NAME }}:riscv64-latest \
+          ${{ env.IMAGE_NAME }}:s390x-latest \
+          ${{ env.IMAGE_NAME }}:386-latest \
+              --amend
+      - name: Push the manifest
+        run: docker manifest push ${{ env.IMAGE_NAME }}:latest
+      - name: Inspect the manifest
+        run: docker manifest inspect ${{ env.IMAGE_NAME }}:latest
+
+  tags-cleanup:
+    environment:
+      name: Docker Hub
+      url: https://hub.docker.com/r/botsudo/capistrano
+    runs-on: ubuntu-latest
+    needs: create-final-image
+    name: Cleanup build tags
+    steps:
+      - name: Install Docker hub-tool
+        run: |
+          curl -sL https://github.com/docker/hub-tool/releases/download/v${{ env.HUB_TOOL_VERSION }}/hub-tool-linux-amd64.tar.gz -o hub-tool-linux.tar.gz
+          tar --strip-components=1 -xzf ./hub-tool-linux.tar.gz
+          ./hub-tool --version
+      - name: Login hub-tool
+        run: |
+          # Fool the login command (https://github.com/docker/hub-tool/pull/198)
+          # ./hub-tool login
+          # Token commands thank to https://stackoverflow.com/a/59334315/5155484
+          HUB_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"$DOCKER_USERNAME\", \"password\": \"$DOCKER_PASSWORD\"}" https://hub.docker.com/v2/users/login/ | jq -r .token)
+          USERNAME="$(printf '%s:' "$DOCKER_USERNAME" | base64 -w0)"
+          USER_PASS="$(printf '%s:%s' "$DOCKER_USERNAME" "$DOCKER_PASSWORD" | base64 -w0)"
+          mkdir -p ~/.docker/
+          printf '{"auths": {"hub-tool": {"auth": "%s"}, "hub-tool-refresh-token": {"auth": "%s"}, "hub-tool-token": { "auth": "%s", "identitytoken": "%s"}}}' \
+            "$USER_PASS" "$USERNAME" \
+            "$USERNAME" "$HUB_TOKEN" \
+            > ~/.docker/config.json
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_REPOSITORY_LOGIN }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_REPOSITORY_PASSWORD }}
+      - name: Remove the temporary images via hub-tool
+        run: |
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:arm64-latest || true
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:amd64-latest || true
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:armv7-latest || true
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:armv6-latest || true
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:ppc64le-latest || true
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:riscv64-latest || true
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:s390x-latest || true
+          ./hub-tool tag rm --verbose --force ${{ env.IMAGE_NAME }}:386-latest || true
+          ./hub-tool tag ls --verbose ${{ env.IMAGE_NAME }}
+      - name: Logout hub-tool
+        if: always()
+        run: rm ~/.docker/config.json
