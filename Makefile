@@ -21,7 +21,7 @@ docker-build:
 		./docker
 
 docker-test:
-	docker-compose -f ./docker/docker-compose-latest.test.yml up
+	docker compose -f ./docker/docker-compose-latest.test.yml up
 
 update-tags:
 	git tag -s -f -a -m "latest version ($(shell make version))" latest
