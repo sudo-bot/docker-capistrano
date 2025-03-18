@@ -111,6 +111,17 @@ jobs:
       - name: Inspect the manifest
         run: docker manifest inspect ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
+      - name: Sign the manifest
+        uses: sudo-bot/action-docker-sign@latest
+        with:
+          image-ref: "${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
+          private-key-id: "${{ vars.DOCKER_PRIVATE_KEY_ID }}"
+          private-key-name: "${{ vars.DOCKER_PRIVATE_KEY_NAME }}"
+          private-key: ${{ secrets.DOCKER_PRIVATE_KEY }}
+          private-key-passphrase: ${{ secrets.DOCKER_PRIVATE_KEY_PASSPHRASE }}
+          sign-manifest: true
+          notary-auth: "${{ secrets.DOCKER_REPOSITORY_LOGIN }}:${{ secrets.DOCKER_REPOSITORY_PASSWORD }}"
+
   tags-cleanup:
     environment:
       name: Docker Hub
