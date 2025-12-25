@@ -1,4 +1,4 @@
-FROM ruby:3-alpine3.21 AS builder
+FROM ruby:3-alpine3.23 AS builder
 
 COPY Gemfile ./
 
@@ -9,7 +9,7 @@ RUN apk add --update --no-cache make ruby-dev gcc musl-dev && \
     apk del gcc make musl-dev ruby-dev && \
     rm -rf /usr/local/bundle/cache /root/.bundle
 
-FROM ruby:3-alpine3.21
+FROM ruby:3-alpine3.23
 
 # Metadata params
 ARG VCS_REF
