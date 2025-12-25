@@ -13,7 +13,7 @@ docker-build:
 	docker buildx build \
 		--build-arg VCS_REF="$(shell git rev-parse HEAD)" \
 		--build-arg BUILD_DATE="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-		--build-arg RELEASE_VERSION="$(shell make version)" \
+		--build-arg RELEASE_VERSION="$(shell make -s version)" \
 		--tag $(IMAGE_TAG) \
 		--progress $(PROGRESS_MODE) \
 		--platform $(PLATFORM) \
@@ -26,10 +26,10 @@ docker-test:
 	docker compose -f ./docker/docker-compose-latest.test.yml up
 
 tag:
-	@echo "Tagging: $(shell make version)-laravel"
+	@echo "Tagging: $(shell make -s version)-laravel"
 	sleep 3
-	git tag -s -a -m "$(shell make version)-laravel" "$(shell make version)-laravel"
-	git push origin "refs/tags/$(shell make version)-laravel"
+	git tag -s -a -m "$(shell make -s version)-laravel" "$(shell make -s version)-laravel"
+	git push origin "refs/tags/$(shell make -s version)-laravel"
 
 version:
 	@grep -F "'capistrano'" ./docker/Gemfile | cut -d "'" -f 4
