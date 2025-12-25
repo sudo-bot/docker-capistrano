@@ -32,7 +32,7 @@ update-tags:
 tag:
 	@echo "Tagging: $(shell make version)"
 	sleep 3
-	git tag -s -a -m "$(shell make version)" "$(shell make version)"
+	git tag -s -a -m "$(shell make version)" "$(shell make -s version)"
 	git push origin "refs/tags/$(shell make version)"
 
 version:
